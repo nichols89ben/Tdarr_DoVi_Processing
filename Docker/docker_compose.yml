@@ -1,0 +1,25 @@
+
+  tdarr_DoVi-node:
+    container_name: tdarr_DoVi-node
+    image: nichols89ben/dovi-tdarr-node:2.27.02 #will need to adjusted to the latest version number if it changes
+    restart: unless-stopped
+    network_mode: service:name_of_your_network # This is the name of the network used with the server
+    environment:
+      - TZ=America/New_York
+      - PUID=1000
+      - PGID=1000
+      - webUIPort=3265 #adjust to your port
+      - serverPort=3266
+      - UMASK_SET=002
+      - inContainer=true
+      - nodeName=DoVi_Yeezy #you can change the name, but i would leave it the same as plugins would need to be adjusted
+      - ffmpegVersion=6
+
+    volumes:
+      - "/path/to/server:/app/server:rw"
+      - "/path/to/configs:/app/configs:rw"
+      - "/path/to/logs:/app/logs:rw"
+      - "/path/to/media:/media:rw"
+
+    devices:
+      - /dev/dri:/dev/dri # This is for hardware acceleration, if you don't have a GPU, remove this line
