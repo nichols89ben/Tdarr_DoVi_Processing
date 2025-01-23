@@ -137,16 +137,40 @@ Because we need `dovi_tool`, `hdr10plus_tool`, and `MP4Box`, a **custom Docker i
 
 ### Notes & Tips
 
+- **Important for Non-Tdarr Pro Users**  
+  The `Requeue` and `Node Tags` features are Pro-only. However, DoVi plugins require the correct DoVi version to function properly. Without Pro, here's what you can do:
+
+  1. In your `docker-compose` file, disable the internal node:
+     ```yaml
+     - internalNode=false
+     - inContainer=false
+     ```
+  2. Run separate nodes alongside the server using the custom image:
+     ```yaml
+     tdarr_DoVi-node:
+       image: nichols89ben/dovi-tdarr-node:0.00.00 #Version number
+       container_name: tdarr_DoVi-node
+     ```
+     You can add more nodes if needed:
+     ```yaml
+     tdarr_DoVi-node2:
+       image: nichols89ben/dovi-tdarr-node:0.00.00 #Version number
+       container_name: tdarr_DoVi-node2
+     ```
+  3. Remove or disable the `Requeue for DoVi Node` step in the flow.
+
+  For more details, see the [Tdarr Docker Compose Docs](https://docs.tdarr.io/docs/installation/docker/run-compose#compose).
+  <br>
 - **Requeue to a DoVi Node**  
-Ensure your node is tagged (e.g., `DoVi_Yeezy`) to use the correct environment. Configure it under:  
+  Ensure your node is tagged (e.g., `DoVi_Yeezy`) to use the correct environment. Configure it under:  
 
-Select the Custom Node > Options > Node Tags > DoVi_Yeezy
+  **Custom Node > Options > Node Tags > DoVi_Yeezy**  
 
-Adjust tag names if you have a different node name or want CPU/GPU only.
-
+  Adjust tag names as needed for your specific setup or hardware (CPU/GPU).  
+  <br>
 - **Make This the Last Flow**  
 Further processing on the MP4 file may overwrite/corrupt the DoVi metadata. Best to use this flow at the end of your pipeline.
-
+  <br>
 - **Replacing the Original File**  
 Certain steps reference the original file for final packaging. If you’ve done prior processing, be sure to replace the original so it doesn’t revert your changes.
 

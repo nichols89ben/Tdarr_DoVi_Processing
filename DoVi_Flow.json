@@ -5,6 +5,18 @@
   "tags": "",
   "flowPlugins": [
     {
+      "name": "ℹ️ IMPORTANT - This plugin is a PRO feature only, if you dont have Pro please check the README for the only workaround I can think of. ",
+      "sourceRepo": "Community",
+      "pluginName": "comment",
+      "version": "1.0.0",
+      "id": "nuscvjdso",
+      "position": {
+        "x": 827.9677100748664,
+        "y": -1828.4155156774248
+      },
+      "fpEnabled": true
+    },
+    {
       "name": "EXIT - FILE is already MP4 and PROFILE 4/5 or 8, should not need further processing. Disable if filter if bypassing to re-encode",
       "sourceRepo": "Community",
       "pluginName": "comment",
@@ -507,8 +519,8 @@
       "version": "1.0.0",
       "id": "SBJlBuz0d",
       "position": {
-        "x": 1097.8267140818132,
-        "y": -1835.9091896003276
+        "x": 1058.611950395688,
+        "y": -1825.016199687515
       },
       "fpEnabled": true
     },
@@ -1709,6 +1721,13 @@
       "target": "zCh2Z_epA",
       "targetHandle": null,
       "id": "j4VauaUdH"
+    },
+    {
+      "source": "nuscvjdso",
+      "sourceHandle": "1",
+      "target": "SBJlBuz0d",
+      "targetHandle": null,
+      "id": "FiNM4N32o"
     }
   ]
 }
