@@ -1,4 +1,4 @@
-FROM haveagitgat/tdarr_node:2.27.02 AS build
+FROM haveagitgat/tdarr_node:2.28.01 AS build
 
 ARG DOVI_TOOL_TAG="2.1.3"
 ARG MP4BOX_TAG="v2.4.0"
@@ -33,7 +33,7 @@ RUN wget -O - "https://github.com/quietvoid/dovi_tool/releases/download/${DOVI_T
 RUN wget -O - "https://github.com/quietvoid/hdr10plus_tool/releases/download/${HDR10PLUS_TOOL_TAG}/hdr10plus_tool-${HDR10PLUS_TOOL_TAG}-x86_64-unknown-linux-musl.tar.gz" | \
     tar -zx -C /usr/local/bin/
 
-FROM haveagitgat/tdarr_node:2.27.02
+FROM haveagitgat/tdarr_node:2.28.01
 
 # Copy tools from the build stage
 COPY --from=build /usr/local/bin/dovi_tool /usr/local/bin/

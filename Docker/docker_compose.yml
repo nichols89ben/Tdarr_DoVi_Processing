@@ -1,7 +1,7 @@
 
   tdarr_DoVi-node:
     container_name: tdarr_DoVi-node
-    image: nichols89ben/dovi-tdarr-node:2.27.02 #will need to adjusted to the latest version number if it changes
+    image: nichols89ben/dovi-tdarr-node:2.28.01 #will need to adjusted to the latest version number if it changes
     restart: unless-stopped
     network_mode: service:name_of_your_network # This is the name of the network used with the server
     environment:
