@@ -1,3 +1,37 @@
+services:
+#    _____   ___      _     ___   ___ 
+#   |_   _| |   \    /_\   | _ \ | _ \
+#     | |   | |) |  / _ \  |   / |   /
+#     |_|   |___/  /_/ \_\ |_|_\ |_|_\
+  
+  tdarr_DoVi:
+    container_name: tdarr_DoVi
+    privileged: true
+    image: ghcr.io/haveagitgat/tdarr:2.31.02 #will need to adjusted to the latest version number if it changes
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - 3265:3265
+      - 3266:3266
+    environment:
+      - TZ=America/New_York
+      - PUID=1000
+      - PGID=1000
+      - webUIPort=3265
+      - serverPort=3266
+      - UMASK_SET=002
+      - internalNode=true
+      - inContainer=true
+      - nodeName=Yeezy
+      - ffmpegVersion=6
+    volumes:
+      - "/path/to/server:/app/server:rw"
+      - "/path/to/configs:/app/configs:rw"
+      - "/path/to/logs:/app/logs:rw"
+      - "/path/to/media:/media:rw"
+
+    devices:
+      - /dev/dri:/dev/dri # This is for hardware acceleration, if you don't have a GPU, remove this line
 
   tdarr_DoVi-node:
     container_name: tdarr_DoVi-node
