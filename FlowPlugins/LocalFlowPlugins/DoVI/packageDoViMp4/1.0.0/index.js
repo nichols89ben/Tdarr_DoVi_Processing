@@ -40,11 +40,12 @@ exports.plugin = exports.details = void 0;
 var cliUtils_1 = require("../../../../FlowHelpers/1.0.0/cliUtils");
 var fileUtils_1 = require("../../../../FlowHelpers/1.0.0/fileUtils");
 /* eslint no-plusplus: ["error", { "allowForLoopAfterthoughts": true }] */
-var details = function () { return ({
+var details = function () {
+  return {
     name: 'Package DoVi mp4',
-    description: 'Package HEVC stream with injected DoVi RPU in mp4',
+    description: 'Package HEVC stream with injected DoVi RPU in mp4 (preserves frame rate)',
     style: {
-        borderColor: 'orange',
+      borderColor: 'orange',
     },
     tags: 'video',
     isStartPlugin: false,
@@ -54,61 +55,77 @@ var details = function () { return ({
     icon: '',
     inputs: [],
     outputs: [
-        {
-            number: 1,
-            tooltip: 'Continue to next plugin',
-        },
+      {
+        number: 1,
+        tooltip: 'Continue to next plugin',
+      },
     ],
-}); };
+  };
+};
 exports.details = details;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-var plugin = function (args) { return __awaiter(void 0, void 0, void 0, function () {
-    var lib, outputFilePath, cliArgs, spawnArgs, cli, res;
+
+var plugin = function (args) {
+  return __awaiter(void 0, void 0, void 0, function () {
+    var lib, outputFilePath, fps, cliArgs, spawnArgs, cli, res;
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                lib = require('../../../../../methods/lib')();
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars,no-param-reassign
-                args.inputs = lib.loadDefaultValues(args.inputs, details);
-                outputFilePath = "".concat((0, fileUtils_1.getPluginWorkDir)(args), "/").concat((0, fileUtils_1.getFileName)(args.originalLibraryFile._id), ".rpu.hevc.mp4");
-                cliArgs = [
-                    '-add',
-                    "".concat(args.inputFileObj.file, ":dvp=8.1:xps_inband:hdr=none"),
-                    '-tmp',
-                    "".concat((0, fileUtils_1.getPluginWorkDir)(args), "/tmp"),
-                    '-brand', 'mp42isom',
-                    '-ab', 'dby1',
-                    '-no-iod',
-                    '-enable', '1',
-                    "".concat(outputFilePath),
-                ];
-                spawnArgs = cliArgs.map(function (row) { return row.trim(); }).filter(function (row) { return row !== ''; });
-                cli = new cliUtils_1.CLI({
-                    cli: '/usr/local/bin/MP4Box',
-                    spawnArgs: spawnArgs,
-                    spawnOpts: {},
-                    jobLog: args.jobLog,
-                    outputFilePath: outputFilePath,
-                    inputFileObj: args.inputFileObj,
-                    logFullCliOutput: args.logFullCliOutput,
-                    updateWorker: args.updateWorker,
-                });
-                return [4 /*yield*/, cli.runCli()];
-            case 1:
-                res = _a.sent();
-                if (res.cliExitCode !== 0) {
-                    args.jobLog('Packaging stream into mp4 failed');
-                    throw new Error('MP4Box failed');
-                }
-                args.logOutcome('tSuc');
-                return [2 /*return*/, {
-                        outputFileObj: {
-                            _id: outputFilePath,
-                        },
-                        outputNumber: 1,
-                        variables: args.variables,
-                    }];
-        }
+      switch (_a.label) {
+        case 0:
+          lib = require('../../../../../methods/lib')();
+          args.inputs = lib.loadDefaultValues(args.inputs, details);
+
+          outputFilePath = `${(0, fileUtils_1.getPluginWorkDir)(args)}/${(0, fileUtils_1.getFileName)(args.originalLibraryFile._id)}.rpu.hevc.mp4`;
+
+          // ✅ Get normalized FPS from args.meta
+          try {
+            const metaFps = args.inputFileObj.meta?.VideoFrameRate;
+            fps = metaFps ? `fps=${metaFps}` : 'fps=23.976'; // fallback
+          } catch (e) {
+            fps = 'fps=23.976';
+          }
+
+          cliArgs = [
+            '-add',
+            `${args.inputFileObj.file}:${fps}:dvp=8.1:xps_inband:hdr=none`,
+            '-tmp',
+            `${(0, fileUtils_1.getPluginWorkDir)(args)}/tmp`,
+            '-brand', 'mp42isom',
+            '-ab', 'dby1',
+            '-no-iod',
+            '-enable', '1',
+            `${outputFilePath}`,
+          ];
+
+          spawnArgs = cliArgs.map((row) => row.trim()).filter((row) => row !== '');
+
+          cli = new cliUtils_1.CLI({
+            cli: '/usr/local/bin/MP4Box',
+            spawnArgs,
+            spawnOpts: {},
+            jobLog: args.jobLog,
+            outputFilePath,
+            inputFileObj: args.inputFileObj,
+            logFullCliOutput: args.logFullCliOutput,
+            updateWorker: args.updateWorker,
+          });
+
+          return [4 /*yield*/, cli.runCli()];
+        case 1:
+          res = _a.sent();
+          if (res.cliExitCode !== 0) {
+            args.jobLog('Packaging stream into mp4 failed');
+            throw new Error('MP4Box failed');
+          }
+
+          args.logOutcome('tSuc');
+          return [2 /*return*/, {
+            outputFileObj: {
+              _id: outputFilePath,
+            },
+            outputNumber: 1,
+            variables: args.variables,
+          }];
+      }
     });
-}); };
+  });
+};
 exports.plugin = plugin;

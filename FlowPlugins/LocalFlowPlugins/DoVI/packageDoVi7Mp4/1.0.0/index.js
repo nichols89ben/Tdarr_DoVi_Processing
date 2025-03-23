@@ -68,7 +68,7 @@ exports.details = details;
 
 var plugin = function (args) {
   return __awaiter(void 0, void 0, void 0, function () {
-    var lib, pluginWorkDir, outFileName, outFilePath, spawnArgs, cli, res;
+    var lib, pluginWorkDir, outFileName, outFilePath, fps, spawnArgs, cli, res;
     return __generator(this, function (_a) {
       switch (_a.label) {
         case 0:
@@ -76,14 +76,20 @@ var plugin = function (args) {
           args.inputs = lib.loadDefaultValues(args.inputs, details);
           pluginWorkDir = (0, fileUtils_1.getPluginWorkDir)(args);
 
-          // Our final mp4 output name
           outFileName = (0, fileUtils_1.getFileName)(args.originalLibraryFile._id) + "_dolby.mp4";
           outFilePath = pluginWorkDir + "/" + outFileName;
 
-          // This sets DV profile 8.1 with HDR10 compatibility
+          // ✅ Get dynamic FPS
+          try {
+            const metaFps = args.inputFileObj.meta?.VideoFrameRate;
+            fps = metaFps ? `fps=${metaFps}` : 'fps=23.976';
+          } catch (e) {
+            fps = 'fps=23.976';
+          }
+
           spawnArgs = [
             '-add',
-            args.inputFileObj.file + ':dvp=8.1:dv-cm=hdr10',
+            `${args.inputFileObj.file}:${fps}:dvp=8.1:dv-cm=hdr10`,
             '-tmp', pluginWorkDir + "/tmp",
             '-brand', 'mp42isom',
             '-ab', 'dby1',
@@ -110,9 +116,9 @@ var plugin = function (args) {
           }
           args.logOutcome('tSuc');
           return [2 /*return*/, {
-              outputFileObj: { _id: outFilePath },
-              outputNumber: 1,
-              variables: args.variables,
+            outputFileObj: { _id: outFilePath },
+            outputNumber: 1,
+            variables: args.variables,
           }];
       }
     });

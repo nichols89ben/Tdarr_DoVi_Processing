@@ -61,15 +61,13 @@ var details = function () { return ({
 exports.details = details;
 
 var plugin = function (args) { return __awaiter(void 0, void 0, void 0, function () {
-    var lib, mp4WorkDir, baseName, outMP4Path, tmpDir, addArg, cliArgs, spawnArgs, cli, res;
+    var lib, mp4WorkDir, baseName, outMP4Path, tmpDir, fps, addArg, cliArgs, spawnArgs, cli, res;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                // Load defaults
                 lib = require('../../../../../methods/lib')();
                 args.inputs = lib.loadDefaultValues(args.inputs, details);
 
-                // We assume the input is the final DV P8 .hevc from previous step
                 mp4WorkDir = "".concat(args.workDir, "/dv_mp4");
                 args.deps.fsextra.ensureDirSync(mp4WorkDir);
 
@@ -77,10 +75,17 @@ var plugin = function (args) { return __awaiter(void 0, void 0, void 0, function
                 outMP4Path = "".concat(mp4WorkDir, "/").concat(baseName, "_DoVi.mp4");
                 tmpDir = "".concat(mp4WorkDir, "/tmp");
 
-                // In Profile 8.1 we often use: dvp=8.1:xps_inband:hdr=none
-                addArg = "".concat(args.inputFileObj.file, ":dvp=8.1:xps_inband:hdr=none");
+                // ✅ Get dynamic FPS
+                try {
+                    const metaFps = args.inputFileObj.meta?.VideoFrameRate;
+                    fps = metaFps ? `fps=${metaFps}` : 'fps=23.976';
+                } catch (e) {
+                    fps = 'fps=23.976';
+                }
 
-                // Prepare MP4Box args
+                // Updated addArg with dynamic fps
+                addArg = `${args.inputFileObj.file}:${fps}:dvp=8.1:xps_inband:hdr=none`;
+
                 cliArgs = [
                     '-add', addArg,
                     '-tmp', tmpDir,
@@ -90,7 +95,9 @@ var plugin = function (args) { return __awaiter(void 0, void 0, void 0, function
                     '-new',
                     outMP4Path
                 ];
+
                 spawnArgs = cliArgs.filter(function (row) { return row.trim() !== ''; });
+
                 cli = new cliUtils_1.CLI({
                     cli: '/usr/local/bin/MP4Box',
                     spawnArgs: spawnArgs,
@@ -101,6 +108,7 @@ var plugin = function (args) { return __awaiter(void 0, void 0, void 0, function
                     logFullCliOutput: args.logFullCliOutput,
                     updateWorker: args.updateWorker
                 });
+
                 return [4 /*yield*/, cli.runCli()];
             case 1:
                 res = _a.sent();

@@ -63,7 +63,7 @@ exports.details = details;
 
 var plugin = function (args) {
   return __awaiter(void 0, void 0, void 0, function () {
-    var lib, pluginWorkDir, outFileName, outFilePath, fallbackMissing, mp4Args, spawnArgs, cli, res;
+    var lib, pluginWorkDir, outFileName, outFilePath, fallbackMissing, fps, mp4Args, spawnArgs, cli, res;
     return __generator(this, function (_a) {
       switch (_a.label) {
         case 0:
@@ -71,21 +71,23 @@ var plugin = function (args) {
           args.inputs = lib.loadDefaultValues(args.inputs, details);
           pluginWorkDir = (0, fileUtils_1.getPluginWorkDir)(args);
 
-          // Our final mp4 output name
           outFileName = (0, fileUtils_1.getFileName)(args.originalLibraryFile._id) + "_dolby.mp4";
           outFilePath = pluginWorkDir + "/" + outFileName;
 
           fallbackMissing = !!args.variables.fallbackMissing;
 
-          /*
-            If fallback is missing, adding `:dv-cm=hdr10` is kinda pointless,
-            but we can do it anyway if some players need "dv-cm=hdr10" to even parse DV.
-            In many older GPAC builds, it just becomes "profile=8.1 dv track" 
-            with no real fallback. 
-          */
+          // ✅ Get dynamic FPS
+          try {
+            const metaFps = args.inputFileObj.meta?.VideoFrameRate;
+            fps = metaFps ? `fps=${metaFps}` : 'fps=23.976';
+          } catch (e) {
+            fps = 'fps=23.976';
+          }
+
+          // Build MP4Box add args with or without HDR fallback
           mp4Args = fallbackMissing
-            ? (args.inputFileObj.file + ':dvp=8.1') // omit dv-cm=hdr10
-            : (args.inputFileObj.file + ':dvp=8.1:dv-cm=hdr10');
+            ? `${args.inputFileObj.file}:${fps}:dvp=8.1`
+            : `${args.inputFileObj.file}:${fps}:dvp=8.1:dv-cm=hdr10`;
 
           spawnArgs = [
             '-add',
@@ -116,9 +118,9 @@ var plugin = function (args) {
           }
           args.logOutcome('tSuc');
           return [2 /*return*/, {
-              outputFileObj: { _id: outFilePath },
-              outputNumber: 1,
-              variables: args.variables
+            outputFileObj: { _id: outFilePath },
+            outputNumber: 1,
+            variables: args.variables
           }];
       }
     });
