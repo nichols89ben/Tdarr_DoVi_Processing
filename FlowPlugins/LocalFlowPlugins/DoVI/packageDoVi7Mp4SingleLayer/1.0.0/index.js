@@ -76,7 +76,6 @@ var plugin = function (args) {
 
           fallbackMissing = !!args.variables.fallbackMissing;
 
-          // ✅ Get dynamic FPS
           try {
             const metaFps = args.inputFileObj.meta?.VideoFrameRate;
             fps = metaFps ? `fps=${metaFps}` : 'fps=23.976';
@@ -84,10 +83,7 @@ var plugin = function (args) {
             fps = 'fps=23.976';
           }
 
-          // Build MP4Box add args with or without HDR fallback
-          mp4Args = fallbackMissing
-            ? `${args.inputFileObj.file}:${fps}:dvp=8.1`
-            : `${args.inputFileObj.file}:${fps}:dvp=8.1:dv-cm=hdr10`;
+          mp4Args = `${args.inputFileObj.file}:${fps}:timescale=24000:dvp=8.1`;
 
           spawnArgs = [
             '-add',

@@ -68,7 +68,7 @@ exports.details = details;
 
 var plugin = function (args) {
   return __awaiter(void 0, void 0, void 0, function () {
-    var lib, pluginWorkDir, outFileName, outFilePath, fps, spawnArgs, cli, res;
+    var lib, pluginWorkDir, outFileName, outFilePath, fpsValue, fpsTag, timescaleTag, spawnArgs, cli, res;
     return __generator(this, function (_a) {
       switch (_a.label) {
         case 0:
@@ -79,17 +79,27 @@ var plugin = function (args) {
           outFileName = (0, fileUtils_1.getFileName)(args.originalLibraryFile._id) + "_dolby.mp4";
           outFilePath = pluginWorkDir + "/" + outFileName;
 
-          // ✅ Get dynamic FPS
+          // ✅ Dynamically extract and normalize FPS
+          let fpsValue = '23.976';
           try {
-            const metaFps = args.inputFileObj.meta?.VideoFrameRate;
-            fps = metaFps ? `fps=${metaFps}` : 'fps=23.976';
-          } catch (e) {
-            fps = 'fps=23.976';
-          }
+            const raw = args.inputFileObj.meta?.VideoFrameRate;
+            if (raw) fpsValue = raw;
+          } catch (_) {}
+
+          fpsTag = `fps=${fpsValue}`;
+
+          // ✅ Normalize timescale based on FPS
+          let timescale = '24000';
+          if (fpsValue === '24') timescale = '24000';
+          else if (fpsValue === '25') timescale = '25000';
+          else if (fpsValue === '29.97') timescale = '30000';
+          else if (fpsValue === '30') timescale = '30000';
+          else if (fpsValue === '60') timescale = '60000';
+          timescaleTag = `timescale=${timescale}`;
 
           spawnArgs = [
             '-add',
-            `${args.inputFileObj.file}:${fps}:dvp=8.1:dv-cm=hdr10`,
+            `${args.inputFileObj.file}:${fpsTag}:${timescaleTag}:dvp=8.1`,
             '-tmp', pluginWorkDir + "/tmp",
             '-brand', 'mp42isom',
             '-ab', 'dby1',

@@ -38,93 +38,96 @@ exports.plugin = exports.details = void 0;
 var cliUtils_1 = require("../../../../FlowHelpers/1.0.0/cliUtils");
 var fileUtils_1 = require("../../../../FlowHelpers/1.0.0/fileUtils");
 
-var details = function () { return ({
-    name: 'Package HDR10+ mp4',
-    description: 'Package the DoVi (Profile 8) or HDR10+->DoVi stream into MP4',
-    style: {
+var details = function () {
+    return {
+      name: 'Package HDR10+ mp4',
+      description: 'Package the DoVi (Profile 8) or HDR10+->DoVi stream into MP4',
+      style: {
         borderColor: 'orange',
-    },
-    tags: 'video',
-    isStartPlugin: false,
-    pType: '',
-    requiresVersion: '2.11.01',
-    sidebarPosition: -1,
-    icon: '',
-    inputs: [],
-    outputs: [
+      },
+      tags: 'video',
+      isStartPlugin: false,
+      pType: '',
+      requiresVersion: '2.11.01',
+      sidebarPosition: -1,
+      icon: '',
+      inputs: [],
+      outputs: [
         {
-            number: 1,
-            tooltip: 'Continue to next plugin',
+          number: 1,
+          tooltip: 'Continue to next plugin',
         },
-    ],
-}); };
-exports.details = details;
-
-var plugin = function (args) { return __awaiter(void 0, void 0, void 0, function () {
-    var lib, mp4WorkDir, baseName, outMP4Path, tmpDir, fps, addArg, cliArgs, spawnArgs, cli, res;
-    return __generator(this, function (_a) {
+      ],
+    };
+  };
+  exports.details = details;
+  
+  var plugin = function (args) {
+    return __awaiter(void 0, void 0, void 0, function () {
+      var lib, mp4WorkDir, baseName, outMP4Path, tmpDir, fps, addArg, cliArgs, spawnArgs, cli, res;
+      return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                lib = require('../../../../../methods/lib')();
-                args.inputs = lib.loadDefaultValues(args.inputs, details);
-
-                mp4WorkDir = "".concat(args.workDir, "/dv_mp4");
-                args.deps.fsextra.ensureDirSync(mp4WorkDir);
-
-                baseName = (0, fileUtils_1.getFileName)(args.originalLibraryFile._id);
-                outMP4Path = "".concat(mp4WorkDir, "/").concat(baseName, "_DoVi.mp4");
-                tmpDir = "".concat(mp4WorkDir, "/tmp");
-
-                // ✅ Get dynamic FPS
-                try {
-                    const metaFps = args.inputFileObj.meta?.VideoFrameRate;
-                    fps = metaFps ? `fps=${metaFps}` : 'fps=23.976';
-                } catch (e) {
-                    fps = 'fps=23.976';
-                }
-
-                // Updated addArg with dynamic fps
-                addArg = `${args.inputFileObj.file}:${fps}:dvp=8.1:xps_inband:hdr=none`;
-
-                cliArgs = [
-                    '-add', addArg,
-                    '-tmp', tmpDir,
-                    '-brand', 'mp42',
-                    '-ab', 'dby1',
-                    '-no-iod',
-                    '-new',
-                    outMP4Path
-                ];
-
-                spawnArgs = cliArgs.filter(function (row) { return row.trim() !== ''; });
-
-                cli = new cliUtils_1.CLI({
-                    cli: '/usr/local/bin/MP4Box',
-                    spawnArgs: spawnArgs,
-                    spawnOpts: {},
-                    jobLog: args.jobLog,
-                    outputFilePath: outMP4Path,
-                    inputFileObj: args.inputFileObj,
-                    logFullCliOutput: args.logFullCliOutput,
-                    updateWorker: args.updateWorker
-                });
-
-                return [4 /*yield*/, cli.runCli()];
-            case 1:
-                res = _a.sent();
-                if (res.cliExitCode !== 0) {
-                    args.jobLog('Packaging into mp4 failed');
-                    throw new Error('MP4Box failed');
-                }
-                args.logOutcome('tSuc');
-                return [2 /*return*/, {
-                        outputFileObj: {
-                            _id: outMP4Path
-                        },
-                        outputNumber: 1,
-                        variables: args.variables
-                    }];
+          case 0:
+            lib = require('../../../../../methods/lib')();
+            args.inputs = lib.loadDefaultValues(args.inputs, details);
+  
+            mp4WorkDir = args.workDir + "/dv_mp4";
+            args.deps.fsextra.ensureDirSync(mp4WorkDir);
+  
+            baseName = (0, fileUtils_1.getFileName)(args.originalLibraryFile._id);
+            outMP4Path = mp4WorkDir + "/" + baseName + "_DoVi.mp4";
+            tmpDir = mp4WorkDir + "/tmp";
+  
+            // ✅ Dynamic FPS
+            try {
+              const metaFps = args.inputFileObj.meta?.VideoFrameRate;
+              fps = metaFps ? `fps=${metaFps}` : 'fps=23.976';
+            } catch (e) {
+              fps = 'fps=23.976';
+            }
+  
+            // ⚡ Clean packaging flags
+            addArg = `${args.inputFileObj.file}:${fps}:timescale=24000:dvp=8.1:xps_inband`;
+  
+            cliArgs = [
+              '-add', addArg,
+              '-tmp', tmpDir,
+              '-brand', 'mp42',
+              '-ab', 'dby1',
+              '-no-iod',
+              '-new',
+              outMP4Path
+            ];
+  
+            spawnArgs = cliArgs.filter(row => row.trim() !== '');
+  
+            cli = new cliUtils_1.CLI({
+              cli: '/usr/local/bin/MP4Box',
+              spawnArgs,
+              spawnOpts: {},
+              jobLog: args.jobLog,
+              outputFilePath: outMP4Path,
+              inputFileObj: args.inputFileObj,
+              logFullCliOutput: args.logFullCliOutput,
+              updateWorker: args.updateWorker,
+            });
+  
+            return [4 /*yield*/, cli.runCli()];
+          case 1:
+            res = _a.sent();
+            if (res.cliExitCode !== 0) {
+              args.jobLog('Packaging into mp4 failed');
+              throw new Error('MP4Box failed');
+            }
+  
+            args.logOutcome('tSuc');
+            return [2 /*return*/, {
+              outputFileObj: { _id: outMP4Path },
+              outputNumber: 1,
+              variables: args.variables
+            }];
         }
+      });
     });
-}); };
-exports.plugin = plugin;
+  };
+  exports.plugin = plugin;

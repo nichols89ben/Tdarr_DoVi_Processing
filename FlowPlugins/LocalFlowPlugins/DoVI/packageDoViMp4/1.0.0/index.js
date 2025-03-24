@@ -66,36 +66,36 @@ exports.details = details;
 
 var plugin = function (args) {
   return __awaiter(void 0, void 0, void 0, function () {
-    var lib, outputFilePath, fps, cliArgs, spawnArgs, cli, res;
+    var lib, pluginWorkDir, outputFilePath, fps, cliArgs, spawnArgs, cli, res;
     return __generator(this, function (_a) {
       switch (_a.label) {
         case 0:
           lib = require('../../../../../methods/lib')();
           args.inputs = lib.loadDefaultValues(args.inputs, details);
 
-          outputFilePath = `${(0, fileUtils_1.getPluginWorkDir)(args)}/${(0, fileUtils_1.getFileName)(args.originalLibraryFile._id)}.rpu.hevc.mp4`;
+          pluginWorkDir = (0, fileUtils_1.getPluginWorkDir)(args);
+          outputFilePath = pluginWorkDir + "/" + (0, fileUtils_1.getFileName)(args.originalLibraryFile._id) + ".rpu.hevc.mp4";
 
-          // ✅ Get normalized FPS from args.meta
+          // ✅ Dynamic FPS
           try {
             const metaFps = args.inputFileObj.meta?.VideoFrameRate;
-            fps = metaFps ? `fps=${metaFps}` : 'fps=23.976'; // fallback
+            fps = metaFps ? `fps=${metaFps}` : 'fps=23.976';
           } catch (e) {
             fps = 'fps=23.976';
           }
 
+          // 🔧 Final clean packaging options
           cliArgs = [
-            '-add',
-            `${args.inputFileObj.file}:${fps}:dvp=8.1:xps_inband:hdr=none`,
-            '-tmp',
-            `${(0, fileUtils_1.getPluginWorkDir)(args)}/tmp`,
+            '-add', `${args.inputFileObj.file}:${fps}:timescale=24000:dvp=8.1:xps_inband`,
+            '-tmp', pluginWorkDir + "/tmp",
             '-brand', 'mp42isom',
             '-ab', 'dby1',
             '-no-iod',
             '-enable', '1',
-            `${outputFilePath}`,
+            outputFilePath
           ];
 
-          spawnArgs = cliArgs.map((row) => row.trim()).filter((row) => row !== '');
+          spawnArgs = cliArgs.filter(row => row.trim() !== '');
 
           cli = new cliUtils_1.CLI({
             cli: '/usr/local/bin/MP4Box',
@@ -118,9 +118,7 @@ var plugin = function (args) {
 
           args.logOutcome('tSuc');
           return [2 /*return*/, {
-            outputFileObj: {
-              _id: outputFilePath,
-            },
+            outputFileObj: { _id: outputFilePath },
             outputNumber: 1,
             variables: args.variables,
           }];
