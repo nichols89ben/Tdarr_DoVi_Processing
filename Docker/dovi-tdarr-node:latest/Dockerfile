@@ -1,4 +1,4 @@
-FROM haveagitgat/tdarr_node:2.37.01 AS build
+FROM ghcr.io/haveagitgat/tdarr_node:latest AS build
 
 ARG DOVI_TOOL_TAG="2.1.3"
 ARG MP4BOX_TAG="v2.4.0"

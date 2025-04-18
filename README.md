@@ -108,7 +108,7 @@ Below is a quick summary of each plugin used in the flow. Many are adapted from 
 
 Because we need `dovi_tool`, `hdr10plus_tool`, and `MP4Box`, a **custom Docker image** is needed:
 
-- **Docker Hub**: [`nichols89ben/dovi-tdarr-node:2.28.01`](https://hub.docker.com/r/nichols89ben/dovi-tdarr-node)  
+- **Docker Hub**: [`nichols89ben/dovi-tdarr-node:latest`](https://hub.docker.com/r/nichols89ben/dovi-tdarr-node)  
 - This image aligns with the current Tdarr version and includes the required tools.  
 - If you’re running locally, you can install these tools yourself, but it’s untested here.
 
