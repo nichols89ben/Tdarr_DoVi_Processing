@@ -22,10 +22,41 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Pull Tdarr base and extract version
+        id: get-version
+        run: |
+          docker pull ghcr.io/haveagitgat/tdarr:latest > /dev/null
+          version=$(docker history --no-trunc --format '{{.CreatedBy}}' ghcr.io/haveagitgat/tdarr:latest \
+                    | grep -m1 'ARG VERSION=' | sed 's/.*ARG VERSION=\([0-9.]*\).*/\1/')
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Restore last version
+        id: restore
+        run: |
+          echo "version=" > last_version.txt
+          if [ -f tdarr_version.txt ]; then
+            cp tdarr_version.txt last_version.txt
+          fi
+          echo "last_version=$(cat last_version.txt)" >> $GITHUB_OUTPUT
+
+      - name: Check if base version changed
+        id: check
+        run: |
+          if [ "${{ steps.get-version.outputs.version }}" == "${{ steps.restore.outputs.last_version }}" ]; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and Push Docker image
+        if: steps.check.outputs.changed == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./Docker/dovi-tdarr-node:latest
           file: ./Docker/dovi-tdarr-node:latest/Dockerfile
           push: true
           tags: nichols89ben/dovi-tdarr-node:latest
+
+      - name: Save new version
+        if: steps.check.outputs.changed == 'true'
+        run: echo "${{ steps.get-version.outputs.version }}" > tdarr_version.txt
