@@ -2,7 +2,7 @@ name: Auto Build & Push DoVi Tdarr Node
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Run every hour
+    - cron: '0 0 * * *' # Run once a day at midnight
   workflow_dispatch:
 
 permissions:
