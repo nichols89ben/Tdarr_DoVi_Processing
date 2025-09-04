@@ -114,14 +114,14 @@ var plugin = function (args) {
             ffmpegCmd =
               "ffmpeg -y -loglevel error -stats " +
               "-i \"" + args.inputFileObj.file + "\" " +
-              "-map 0:v:0 -c:v copy -vbsf hevc_mp4toannexb -f hevc - | " +
+              "-map 0:v:0 -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | " +
               "/usr/local/bin/dovi_tool extract-rpu - -o \"" + outputFilePath + "\"";
           } else {
             ffmpegCmd =
               "ffmpeg -y -loglevel error -stats " +
               "-i \"" + args.inputFileObj.file + "\" " +
-              "-map 0:v:0 -c:v copy -vbsf hevc_mp4toannexb -f hevc " +
-              "-map 0:v:1 -c:v copy -vbsf hevc_mp4toannexb -f hevc - | " +
+              "-map 0:v:0 -c:v copy -bsf:v hevc_mp4toannexb -f hevc " +
+              "-map 0:v:1 -c:v copy -bsf:v hevc_mp4toannexb -f hevc - | " +
               "/usr/local/bin/dovi_tool extract-rpu - -o \"" + outputFilePath + "\"";
           }
 

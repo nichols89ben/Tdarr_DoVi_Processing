@@ -103,7 +103,7 @@ var plugin = function (args) { return __awaiter(void 0, void 0, void 0, function
                 }, null, 2));
 
                 // 1) Extract base layer to BL.hevc
-                shellCmd1 = "ffmpeg -i \"".concat(args.inputFileObj.file, "\" -y -loglevel error -stats -map 0:v:0 -c:v copy -vbsf hevc_mp4toannexb -f hevc \"").concat(blHevcPath, "\"");
+                shellCmd1 = "ffmpeg -i \"".concat(args.inputFileObj.file, "\" -y -loglevel error -stats -map 0:v:0 -c:v copy -bsf:v hevc_mp4toannexb -f hevc \"").concat(blHevcPath, "\"");
                 cli1 = new cliUtils_1.CLI({
                     cli: '/bin/sh',
                     spawnArgs: ['-c', shellCmd1],
