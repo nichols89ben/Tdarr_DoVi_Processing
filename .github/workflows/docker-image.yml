@@ -53,8 +53,8 @@ jobs:
         if: steps.check.outputs.changed == 'true'
         uses: docker/build-push-action@v5
         with:
-          context: ./Docker/dovi-tdarr-node
-          file: ./Docker/dovi-tdarr-node/Dockerfile
+          context: .
+          file: 'Docker/dovi-tdarr-node:latest/Dockerfile'
           push: true
           tags: nichols89ben/dovi-tdarr-node:latest
 
