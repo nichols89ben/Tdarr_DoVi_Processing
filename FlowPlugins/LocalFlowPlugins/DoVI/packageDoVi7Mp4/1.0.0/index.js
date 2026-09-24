@@ -68,7 +68,7 @@ exports.details = details;
 
 var plugin = function (args) {
   return __awaiter(void 0, void 0, void 0, function () {
-    var lib, pluginWorkDir, outFileName, outFilePath, fpsValue, fpsTag, timescaleTag, spawnArgs, cli, res;
+    var lib, pluginWorkDir, outFileName, outFilePath, spawnArgs, cli, res;
     return __generator(this, function (_a) {
       switch (_a.label) {
         case 0:
@@ -79,27 +79,35 @@ var plugin = function (args) {
           outFileName = (0, fileUtils_1.getFileName)(args.originalLibraryFile._id) + "_dolby.mp4";
           outFilePath = pluginWorkDir + "/" + outFileName;
 
-          // ✅ Dynamically extract and normalize FPS
-          let fpsValue = '23.976';
+          // ✅ Dynamic FPS from Original Library File
+          let targetFps = "23.976";
+          let targetTimescale = "24000";
+
           try {
-            const raw = args.inputFileObj.meta?.VideoFrameRate;
-            if (raw) fpsValue = raw;
-          } catch (_) {}
-
-          fpsTag = `fps=${fpsValue}`;
-
-          // ✅ Normalize timescale based on FPS
-          let timescale = '24000';
-          if (fpsValue === '24') timescale = '24000';
-          else if (fpsValue === '25') timescale = '25000';
-          else if (fpsValue === '29.97') timescale = '30000';
-          else if (fpsValue === '30') timescale = '30000';
-          else if (fpsValue === '60') timescale = '60000';
-          timescaleTag = `timescale=${timescale}`;
+            const videoStream = args.originalLibraryFile.ffProbeData.streams.find(s => s.codec_type === 'video');
+            if (videoStream && videoStream.r_frame_rate) {
+                const parts = videoStream.r_frame_rate.split('/');
+                if (parts.length === 2) {
+                    const num = parseInt(parts[0], 10);
+                    const den = parseInt(parts[1], 10);
+                    
+                    if (den === 1) {
+                        // True CFR (e.g., 24.000 or 30.000)
+                        targetFps = num.toString(); 
+                        targetTimescale = (num * 1000).toString(); 
+                    } else {
+                        // VFR or NTSC (e.g., 23.976 from 24000/1001)
+                        targetFps = (num / den).toFixed(3); 
+                        targetTimescale = num.toString(); 
+                    }
+                }
+            }
+          } catch (e) {
+            args.jobLog('Error calculating dynamic FPS, falling back to 23.976 NTSC standard.');
+          }
 
           spawnArgs = [
-            '-add',
-            `${args.inputFileObj.file}:${fpsTag}:${timescaleTag}:dvp=8.1`,
+            '-add', `${args.inputFileObj.file}:fps=${targetFps}:timescale=${targetTimescale}:dvp=8.1`,
             '-tmp', pluginWorkDir + "/tmp",
             '-brand', 'mp42isom',
             '-ab', 'dby1',
