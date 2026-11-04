@@ -1,9 +1,9 @@
 FROM ghcr.io/haveagitgat/tdarr_node:latest AS build
 #FROM ghcr.io/haveagitgat/tdarr_node:2.40.01 AS build
 
-ARG DOVI_TOOL_TAG="2.1.3"
-ARG MP4BOX_TAG="v2.4.0"
-ARG HDR10PLUS_TOOL_TAG="1.6.1"
+ARG DOVI_TOOL_TAG="2.3.3"
+ARG MP4BOX_TAG="v26.07.0"
+ARG HDR10PLUS_TOOL_TAG="1.7.1"
 
 # Update and install dependencies
 RUN apt-get update && \
