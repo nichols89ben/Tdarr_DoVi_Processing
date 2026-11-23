@@ -78,19 +78,35 @@ var details = function () {
             outMP4Path = mp4WorkDir + "/" + baseName + "_DoVi.mp4";
             tmpDir = mp4WorkDir + "/tmp";
   
-            // ✅ Dynamic FPS
+            // ✅ Dynamic FPS from Original Library File
+            let targetFps = "23.976";
+            let targetTimescale = "24000";
+
             try {
-              const metaFps = args.inputFileObj.meta?.VideoFrameRate;
-              fps = metaFps ? `fps=${metaFps}` : 'fps=23.976';
+              const videoStream = args.originalLibraryFile.ffProbeData.streams.find(s => s.codec_type === 'video');
+              if (videoStream && videoStream.r_frame_rate) {
+                  const parts = videoStream.r_frame_rate.split('/');
+                  if (parts.length === 2) {
+                      const num = parseInt(parts[0], 10);
+                      const den = parseInt(parts[1], 10);
+                      
+                      if (den === 1) {
+                          // True CFR (e.g., 24.000 or 30.000)
+                          targetFps = num.toString(); 
+                          targetTimescale = (num * 1000).toString(); 
+                      } else {
+                          // VFR or NTSC (e.g., 23.976 from 24000/1001)
+                          targetFps = (num / den).toFixed(3); 
+                          targetTimescale = num.toString(); 
+                      }
+                  }
+              }
             } catch (e) {
-              fps = 'fps=23.976';
+              args.jobLog('Error calculating dynamic FPS, falling back to 23.976 NTSC standard.');
             }
   
-            // ⚡ Clean packaging flags
-            addArg = `${args.inputFileObj.file}:${fps}:timescale=24000:dvp=8.1:xps_inband`;
-  
             cliArgs = [
-              '-add', addArg,
+              '-add', `${args.inputFileObj.file}:${targetFps}:timescale=${targetTimescale}:dvp=8.1:xps_inband`,
               '-tmp', tmpDir,
               '-brand', 'mp42',
               '-ab', 'dby1',
